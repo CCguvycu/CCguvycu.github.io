@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Kali Terminal — a full Linux terminal on Android. No storage, no root. Just connect and go.">
+<meta property="og:title" content="Kali Terminal">
+<meta property="og:description" content="A full Linux terminal on Android. Zero storage, no root required.">
+<meta property="og:type" content="website">
+<title>Kali Terminal</title>
+<style>
+/* ── Reset & tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg:    #0a0e17;
+  --bg2:   #0f1521;
+  --bg3:   #161d2e;
+  --green: #00ff41;
+  --cyan:  #00d4ff;
+  --red:   #ff4444;
+  --dim:   #2a3a4a;
+  --dim2:  #6a7a8a;
+  --fg:    #c8d8e8;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Courier New', Courier, monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* scanline overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,.06) 2px, rgba(0,0,0,.06) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Nav ─────────────────────────────────────────────────────────────────── */
+nav {
+  border-bottom: 1px solid var(--dim);
+  padding: 16px 0;
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,14,23,.92);
+  backdrop-filter: blur(8px);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo {
+  color: var(--green);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 3px;
+  text-shadow: 0 0 14px #00ff4144;
+  text-decoration: none;
+}
+.nav-logo em { color: var(--cyan); font-style: normal; }
+.nav-links { display: flex; gap: 20px; }
+.nav-links a {
+  color: var(--dim2);
+  font-size: 11px;
+  text-decoration: none;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color .15s;
+}
+.nav-links a:hover { color: var(--green); }
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.hero {
+  padding: 80px 0 72px;
+  text-align: center;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -100px; left: 50%; transform: translateX(-50%);
+  width: 500px; height: 500px;
+  background: radial-gradient(ellipse, #00ff4108 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.app-icon {
+  width: 100px; height: 100px;
+  border-radius: 24px;
+  background: var(--bg3);
+  border: 1px solid var(--dim);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 28px;
+  box-shadow: 0 0 40px #00ff4112, 0 8px 32px rgba(0,0,0,.4);
+  animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.hero h1 {
+  font-size: clamp(28px, 6vw, 48px);
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.hero h1 em { color: var(--green); font-style: normal; text-shadow: 0 0 20px #00ff4144; }
+
+.hero .sub {
+  font-size: 14px;
+  color: var(--dim2);
+  line-height: 1.7;
+  max-width: 480px;
+  margin: 0 auto 40px;
+}
+
+/* terminal preview */
+.term-preview {
+  background: #000;
+  border: 1px solid var(--dim);
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 520px;
+  margin: 0 auto 44px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.7;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+}
+.term-bar {
+  display: flex; gap: 6px; margin-bottom: 14px;
+}
+.term-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.term-dot.r { background: #ff5f57; }
+.term-dot.y { background: #ffbd2e; }
+.term-dot.g { background: #28ca41; }
+.g  { color: var(--green); }
+.c  { color: var(--cyan); }
+.d  { color: var(--dim2); }
+.w  { color: #fff; }
+.blink {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--green);
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+  margin-left: 1px;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* download buttons */
+.btn-row {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 32px;
+  background: var(--green);
+  color: #000;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  border-radius: 5px;
+  box-shadow: 0 0 24px #00ff4130;
+  transition: opacity .15s, box-shadow .15s;
+}
+.btn-primary:hover { opacity: .9; box-shadow: 0 0 36px #00ff4155; }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px;
+  background: transparent;
+  color: var(--fg);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-decoration: none;
+  border: 1px solid var(--dim);
+  border-radius: 5px;
+  transition: border-color .15s, color .15s;
+}
+.btn-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
+.meta { color: var(--dim2); font-size: 11px; margin-top: 14px; }
+.meta a { color: var(--dim2); }
+
+/* ── Stats bar ───────────────────────────────────────────────────────────── */
+.stats-bar {
+  border-top: 1px solid var(--dim);
+  border-bottom: 1px solid var(--dim);
+  padding: 22px 0;
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+.stat { text-align: center; }
+.stat .n { display: block; font-size: 26px; font-weight: bold; color: var(--green); }
+.stat .l { display: block; color: var(--dim2); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+/* ── Features ────────────────────────────────────────────────────────────── */
+.section { padding: 64px 0; }
+.section-label {
+  color: var(--green);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.section h2 {
+  font-size: clamp(20px, 4vw, 30px);
+  color: #fff;
+  margin-bottom: 40px;
+  letter-spacing: 1px;
+}
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.feat {
+  background: var(--bg2);
+  border: 1px solid var(--dim);
+  border-radius: 8px;
+  padding: 22px 18px;
+  transition: border-color .2s;
+}
+.feat:hover { border-color: var(--dim2); }
+.feat-icon { font-size: 22px; margin-bottom: 10px; }
+.feat h3 { color: var(--fg); font-size: 13px; margin-bottom: 6px; }
+.feat p { color: var(--dim2); font-size: 12px; line-height: 1.6; }
+
+/* ── How it works ────────────────────────────────────────────────────────── */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0;
+  border: 1px solid var(--dim);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.step {
+  padding: 28px 22px;
+  border-right: 1px solid var(--dim);
+  position: relative;
+}
+.step:last-child { border-right: none; }
+.step-num {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--dim);
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.step h3 { color: var(--fg); font-size: 13px; margin-bottom: 6px; }
+.step p { color: var(--dim2); font-size: 12px; line-height: 1.6; }
+.step code {
+  font-size: 11px;
+  color: var(--green);
+  background: #00ff410d;
+  border: 1px solid #00ff4120;
+  border-radius: 3px;
+  padding: 1px 6px;
+}
+
+/* ── CTA ─────────────────────────────────────────────────────────────────── */
+.cta {
+  text-align: center;
+  padding: 64px 0;
+  border-top: 1px solid var(--dim);
+}
+.cta h2 { font-size: 24px; color: #fff; margin-bottom: 10px; }
+.cta p { color: var(--dim2); font-size: 13px; margin-bottom: 32px; }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--dim);
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-logo { color: var(--green); font-size: 11px; letter-spacing: 2px; }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { color: var(--dim2); font-size: 11px; text-decoration: none; }
+.footer-links a:hover { color: var(--fg); }
+.footer-copy { color: var(--dim2); font-size: 10px; width: 100%; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .steps { grid-template-columns: 1fr; }
+  .step { border-right: none; border-bottom: 1px solid var(--dim); }
+  .step:last-child { border-bottom: none; }
+  .stats-bar { gap: 32px; }
+  footer { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="container nav-inner">
+    <a class="nav-logo" href="#">KALI<em>TERMINAL</em></a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/CCguvycu/kali-terminal-android">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <div class="app-icon">
+      <svg width="62" height="62" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 30L48 54L18 78L30 78L42 54L30 30Z" fill="#00ff41"/>
+        <path d="M54 66H88V76H54Z" fill="#00ff41"/>
+      </svg>
+    </div>
+
+    <h1>Kali <em>Terminal</em></h1>
+    <p class="sub">A full Linux terminal on Android.<br>Zero local storage. No root required. Just connect.</p>
+
+    <div class="term-preview">
+      <div class="term-bar">
+        <div class="term-dot r"></div>
+        <div class="term-dot y"></div>
+        <div class="term-dot g"></div>
+      </div>
+      <div><span class="g">root@kali</span><span class="d">:</span><span class="c">~</span><span class="d">$</span> <span class="w">nmap -sV 192.168.1.1</span></div>
+      <div class="d">Starting Nmap 7.94 ...</div>
+      <div class="d">PORT&nbsp;&nbsp;&nbsp;STATE SERVICE VERSION</div>
+      <div><span class="g">22/tcp open  ssh</span>    <span class="d">OpenSSH 8.9</span></div>
+      <div><span class="g">80/tcp open  http</span>   <span class="d">nginx 1.22</span></div>
+      <div>&nbsp;</div>
+      <div><span class="g">root@kali</span><span class="d">:</span><span class="c">~</span><span class="d">$</span> <span class="blink"></span></div>
+    </div>
+
+    <div class="btn-row">
+      <a class="btn-primary" href="https://github.com/CCguvycu/kali-terminal-android/releases/download/v1.1/kali-terminal-v1.1.apk">
+        &#x25BC; Download APK
+      </a>
+      <a class="btn-secondary" href="https://github.com/CCguvycu/kali-terminal-android">
+        &#x2605; View Source
+      </a>
+    </div>
+    <p class="meta">v1.1 &nbsp;·&nbsp; 185 KB &nbsp;·&nbsp; Android 5.0+ &nbsp;·&nbsp; MIT License &nbsp;·&nbsp;
+      <a href="https://github.com/CCguvycu/kali-terminal-android/releases">All releases</a>
+    </p>
+  </div>
+</section>
+
+<!-- ── Stats ─────────────────────────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stat"><span class="n">185 KB</span><span class="l">APK size</span></div>
+  <div class="stat"><span class="n">0 MB</span><span class="l">Local storage</span></div>
+  <div class="stat"><span class="n">Android 5+</span><span class="l">Compatibility</span></div>
+  <div class="stat"><span class="n">MIT</span><span class="l">License</span></div>
+</div>
+
+<!-- ── Features ──────────────────────────────────────────────────────────── -->
+<section class="section" id="features">
+  <div class="container">
+    <p class="section-label">// features</p>
+    <h2>Everything you need</h2>
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">⚡</div>
+        <h3>Zero Storage</h3>
+        <p>The Linux environment lives on your server. The app is just a window into it — 185 KB total.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🖥</div>
+        <h3>Real Terminal</h3>
+        <p>Full xterm.js emulation — colours, cursor keys, tab completion, window resize, interactive programs.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📜</div>
+        <h3>Command History</h3>
+        <p>Every command logged per session. Tap the history button to browse and re-run past commands.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔒</div>
+        <h3>Token Auth</h3>
+        <p>Your server, your token. No accounts, no cloud login, no data shared with anyone.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">👁</div>
+        <h3>Live View</h3>
+        <p>The web dashboard lets you watch any active session in real time from a browser.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⚠</div>
+        <h3>Keyword Alerts</h3>
+        <p>Dangerous commands trigger instant alerts on the dashboard so nothing slips by unnoticed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ───────────────────────────────────────────────────────── -->
+<section class="section" id="install">
+  <div class="container">
+    <p class="section-label">// getting started</p>
+    <h2>Up and running in 3 steps</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Download the APK</h3>
+        <p>Tap the download button above. When prompted, allow installs from unknown sources in
+          <strong>Settings → Security</strong>.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Enter your server</h3>
+        <p>On the connect screen, enter your server URL and token.<br>
+          Default: <code>wss://kali-terminal-production.up.railway.app</code></p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Connect</h3>
+        <p>Tap Connect. You now have a full Linux shell on your phone. Run any command you like.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ───────────────────────────────────────────────────────────────── -->
+<section class="cta">
+  <div class="container">
+    <h2>Ready to connect?</h2>
+    <p>Free, open source, self-hostable. Your terminal, your rules.</p>
+    <div class="btn-row">
+      <a class="btn-primary" href="https://github.com/CCguvycu/kali-terminal-android/releases/download/v1.1/kali-terminal-v1.1.apk">
+        &#x25BC; Download APK
+      </a>
+      <a class="btn-secondary" href="https://github.com/CCguvycu/kali-terminal-server">
+        &#x2605; Self-host the server
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;width:100%">
+    <span class="footer-logo">KALITERMINAL</span>
+    <div class="footer-links">
+      <a href="https://github.com/CCguvycu/kali-terminal-android">Android App</a>
+      <a href="https://github.com/CCguvycu/kali-terminal-server">Server</a>
+      <a href="https://github.com/CCguvycu/kali-terminal-api">API</a>
+      <a href="https://github.com/CCguvycu/kali-terminal-android/blob/master/LICENSE">License</a>
+    </div>
+    <span class="footer-copy">MIT License · Open source · Self-hostable</span>
+  </div>
+</footer>
+
+</body>
+</html>
