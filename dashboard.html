@@ -3,399 +3,394 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin Dashboard — Kali Terminal</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
-<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.9.0/lib/addon-fit.js"></script>
+<meta name="description" content="Kali Terminal — a full-stack remote terminal platform built from scratch. Android app, WebSocket server, REST API, PostgreSQL, live admin dashboard.">
+<title>What I Built — Kali Terminal</title>
 <style>
-:root{--bg:#0a0e17;--bg2:#0f1521;--bg3:#161d2e;--green:#00ff41;--cyan:#00d4ff;--red:#ff4444;--yellow:#ffd700;--orange:#ff8c00;--dim:#2a3a4a;--dim2:#6a7a8a;--fg:#c8d8e8}
+:root{--bg:#0a0e17;--bg2:#0f1521;--bg3:#161d2e;--green:#00ff41;--cyan:#00d4ff;--red:#ff4444;--yellow:#ffd700;--orange:#ff8c00;--purple:#a855f7;--dim:#2a3a4a;--dim2:#6a7a8a;--fg:#c8d8e8}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:'Courier New',monospace;font-size:13px;min-height:100vh}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px);pointer-events:none;z-index:9998}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Courier New',Courier,monospace;min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:9999}
+.container{max-width:960px;margin:0 auto;padding:0 24px}
 
-/* ── Login ── */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
-.login-box{background:var(--bg2);border:1px solid var(--dim);border-radius:8px;padding:40px 36px;width:320px;text-align:center}
-.login-logo{color:var(--green);font-size:9px;line-height:1.2;white-space:pre;text-shadow:0 0 10px #00ff4155;margin-bottom:20px}
-.login-box h2{color:var(--cyan);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:22px}
-.login-box label{display:block;color:var(--dim2);font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left;margin-bottom:5px}
-.login-box input{width:100%;background:#161d2e;border:1px solid var(--dim);border-radius:4px;color:var(--fg);font-family:'Courier New',monospace;font-size:14px;padding:10px 12px;outline:none;margin-bottom:16px;transition:border-color .2s}
-.login-box input:focus{border-color:var(--green)}
-.login-box button{width:100%;background:var(--green);color:#000;border:none;border-radius:4px;padding:12px;font-family:'Courier New',monospace;font-size:13px;font-weight:bold;cursor:pointer;letter-spacing:1px}
-.login-box button:hover{opacity:.9}
-.err-msg{color:var(--red);font-size:11px;margin-bottom:12px;padding:8px;background:#ff444415;border:1px solid #ff444433;border-radius:4px;display:none}
+/* nav */
+nav{border-bottom:1px solid var(--dim);padding:15px 0;position:sticky;top:0;z-index:100;background:rgba(10,14,23,.93);backdrop-filter:blur(8px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{color:var(--green);font-size:13px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 14px #00ff4144;text-decoration:none}
+.nav-logo em{color:var(--cyan);font-style:normal}
+.nav-links{display:flex;gap:22px}
+.nav-links a{color:var(--dim2);font-size:11px;text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .15s}
+.nav-links a:hover{color:var(--green)}
 
-/* ── Dashboard ── */
-#dashboard{display:none}
-header{background:var(--bg2);border-bottom:1px solid var(--dim);padding:13px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.logo{color:var(--green);font-size:12px;font-weight:bold;letter-spacing:2px;text-shadow:0 0 12px #00ff4155}
-.logo em{color:var(--cyan);font-style:normal}
-#hdr-right{display:flex;align-items:center;gap:10px}
-#countdown{color:var(--dim2);font-size:11px}
-#alert-badge{background:var(--red);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:bold;display:none;cursor:pointer}
-.hdr-btn{background:var(--bg3);border:1px solid var(--dim);color:var(--green);padding:5px 12px;font-family:'Courier New',monospace;font-size:11px;cursor:pointer;border-radius:3px}
-.hdr-btn:hover{border-color:var(--green)}
-.hdr-btn.red{color:var(--red);border-color:#ff444455}
-.hdr-btn.red:hover{border-color:var(--red)}
+/* hero */
+.hero{padding:72px 0 64px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,#00ff4106 0%,transparent 70%);pointer-events:none}
+.hero-label{color:var(--dim2);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:16px}
+.hero h1{font-size:clamp(26px,6vw,52px);font-weight:bold;color:#fff;line-height:1.15;margin-bottom:16px;letter-spacing:1px}
+.hero h1 .g{color:var(--green);text-shadow:0 0 24px #00ff4144}
+.hero h1 .c{color:var(--cyan)}
+.hero p{color:var(--dim2);font-size:14px;line-height:1.8;max-width:580px;margin:0 auto 40px}
+.hero-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-outline{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border:1px solid var(--dim);border-radius:4px;color:var(--fg);font-family:'Courier New',monospace;font-size:12px;text-decoration:none;transition:border-color .15s,color .15s}
+.btn-outline:hover{border-color:var(--green);color:var(--green)}
+.btn-outline.cyan:hover{border-color:var(--cyan);color:var(--cyan)}
 
-main{padding:20px 24px;max-width:1280px;margin:0 auto}
+/* section headings */
+.section{padding:60px 0;border-top:1px solid var(--dim)}
+.s-label{color:var(--green);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.s-label.cyan{color:var(--cyan)}
+.s-label.purple{color:var(--purple)}
+.s-label.orange{color:var(--orange)}
+.section h2{font-size:clamp(20px,4vw,32px);color:#fff;margin-bottom:10px;letter-spacing:.5px}
+.section>.container>p{color:var(--dim2);font-size:13px;line-height:1.8;max-width:640px;margin-bottom:36px}
 
-/* stats */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
-.stat{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:18px 14px;text-align:center}
-.stat .n{font-size:34px;font-weight:bold;display:block;line-height:1}
-.n.g{color:var(--green);text-shadow:0 0 10px #00ff4133}
-.n.c{color:var(--cyan);text-shadow:0 0 10px #00d4ff33}
-.n.y{color:var(--yellow)}
-.n.r{color:var(--red)}
-.stat .lbl{color:var(--dim2);font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-top:6px;display:block}
+/* architecture */
+.arch{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;margin-bottom:20px}
+@media(max-width:680px){.arch{grid-template-columns:1fr 1fr}}
+.arch-node{padding:22px 16px;border-right:1px solid var(--dim);text-align:center;position:relative;background:var(--bg2)}
+.arch-node:last-child{border-right:none}
+.arch-icon{font-size:28px;margin-bottom:10px;display:block}
+.arch-name{color:#fff;font-size:12px;font-weight:bold;margin-bottom:5px;letter-spacing:.5px}
+.arch-tech{color:var(--dim2);font-size:10px;line-height:1.5}
+.arch-node .tag{display:inline-block;font-size:9px;padding:1px 6px;border-radius:3px;margin-top:6px;letter-spacing:.5px;text-transform:uppercase}
+.tag-green{background:#00ff4115;color:var(--green);border:1px solid #00ff4130}
+.tag-cyan{background:#00d4ff15;color:var(--cyan);border:1px solid #00d4ff30}
+.tag-purple{background:#a855f715;color:var(--purple);border:1px solid #a855f730}
+.tag-orange{background:#ff8c0015;color:var(--orange);border:1px solid #ff8c0030}
+.arch-arrow{display:flex;align-items:center;justify-content:center;background:var(--bg);border-right:1px solid var(--dim);font-size:18px;color:var(--dim);padding:0 6px}
 
-/* cards */
-.card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;margin-bottom:18px;overflow:hidden}
-.card.alert-card{border-color:#ff444455;display:none}
-.card-head{padding:11px 16px;border-bottom:1px solid var(--dim);display:flex;align-items:center;justify-content:space-between;background:var(--bg3)}
-.alert-card .card-head{background:#ff444410;border-bottom-color:#ff444433}
-.card-head h2{color:var(--cyan);font-size:11px;text-transform:uppercase;letter-spacing:1.5px}
-.alert-card .card-head h2{color:var(--red)}
-.badge{color:var(--dim2);font-size:10px;background:var(--bg2);border:1px solid var(--dim);padding:2px 8px;border-radius:10px}
-.ack-btn{background:none;border:1px solid #ff444455;color:var(--red);font-family:'Courier New',monospace;font-size:10px;padding:2px 10px;border-radius:3px;cursor:pointer}
-.ack-btn:hover{background:#ff444415}
+/* flow line */
+.flow{display:flex;align-items:center;justify-content:center;gap:0;margin:16px 0 36px;flex-wrap:wrap}
+.flow-node{background:var(--bg2);border:1px solid var(--dim);border-radius:5px;padding:8px 14px;font-size:11px;color:var(--fg);white-space:nowrap}
+.flow-arr{color:var(--dim);font-size:14px;padding:0 8px}
 
-/* tables */
-table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:8px 14px;color:var(--dim2);font-size:10px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--dim);white-space:nowrap}
-td{padding:9px 14px;border-bottom:1px solid #ffffff05;font-size:12px;vertical-align:middle;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:#ffffff03}
-.sid{color:var(--green);font-family:'Courier New',monospace;font-size:11px}
-.cmd-text{color:var(--fg);font-family:'Courier New',monospace}
-.ts{color:var(--dim2);font-size:11px}
-.ip{color:var(--cyan);font-size:11px;font-family:'Courier New',monospace}
-.kw{color:var(--orange);font-size:10px;background:#ff8c0015;border:1px solid #ff8c0044;padding:1px 6px;border-radius:3px}
-.pill-on{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;background:#00ff4115;color:var(--green);border:1px solid #00ff4130}
-.pill-off{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;background:#ffffff08;color:var(--dim2);border:1px solid var(--dim)}
-.empty{padding:28px;text-align:center;color:var(--dim2);font-size:12px}
-#footer{color:var(--dim2);font-size:10px;text-align:right;padding:4px 0 16px}
+/* tech stack grid */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:8px}
+.tech-card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:16px 14px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
+.tech-card:hover{border-color:var(--dim2)}
+.tech-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.tech-info h3{color:var(--fg);font-size:12px;margin-bottom:3px}
+.tech-info p{color:var(--dim2);font-size:11px;line-height:1.4}
 
-/* action buttons */
-.act-btn{background:none;font-family:'Courier New',monospace;font-size:10px;padding:2px 8px;border-radius:3px;cursor:pointer;letter-spacing:.5px;margin-right:4px}
-.kill-btn{border:1px solid #ff444455;color:var(--red)}
-.kill-btn:hover{background:#ff444415;border-color:var(--red)}
-.watch-btn{border:1px solid #00d4ff55;color:var(--cyan)}
-.watch-btn:hover{background:#00d4ff15;border-color:var(--cyan)}
-.act-btn:disabled{opacity:.4;cursor:default}
+/* features */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.feat-card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:22px 18px;transition:border-color .2s}
+.feat-card:hover{border-color:var(--dim2)}
+.feat-card .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.feat-card .ico{font-size:20px}
+.feat-card h3{color:#fff;font-size:13px;letter-spacing:.3px}
+.feat-card p{color:var(--dim2);font-size:12px;line-height:1.6}
 
-/* live view modal */
-#modal{display:none;position:fixed;inset:0;background:#000000cc;z-index:200;align-items:center;justify-content:center}
-#modal.open{display:flex}
-#modal-box{background:var(--bg2);border:1px solid var(--cyan);border-radius:8px;width:90vw;max-width:900px;height:70vh;display:flex;flex-direction:column;overflow:hidden}
-#modal-head{padding:10px 16px;border-bottom:1px solid var(--dim);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-#modal-title{color:var(--cyan);font-size:12px;font-weight:bold;letter-spacing:1px}
-#modal-close{background:none;border:none;color:var(--dim2);font-size:20px;cursor:pointer;line-height:1}
-#modal-close:hover{color:var(--red)}
-#modal-term{flex:1;background:#000;overflow:hidden}
+/* code block */
+.code-block{background:#000;border:1px solid var(--dim);border-radius:6px;overflow:hidden;margin:20px 0}
+.code-bar{background:var(--bg3);border-bottom:1px solid var(--dim);padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.code-bar span{color:var(--dim2);font-size:10px;letter-spacing:1px}
+.code-body{padding:18px 20px;font-size:12px;line-height:1.8;overflow-x:auto}
+.code-body .kw{color:var(--cyan)}
+.code-body .fn{color:var(--green)}
+.code-body .st{color:var(--yellow)}
+.code-body .cm{color:var(--dim2)}
+.code-body .dc{color:var(--orange)}
+
+/* stats strip */
+.stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0;border:1px solid var(--dim);border-radius:6px;overflow:hidden;margin:36px 0}
+.s-stat{padding:24px 16px;text-align:center;border-right:1px solid var(--dim);background:var(--bg2)}
+.s-stat:last-child{border-right:none}
+.s-stat .n{display:block;font-size:30px;font-weight:bold;color:var(--green);text-shadow:0 0 10px #00ff4133}
+.s-stat .l{display:block;color:var(--dim2);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
+
+/* terminal mockup */
+.term-mockup{background:#000;border:1px solid var(--dim);border-radius:8px;overflow:hidden;margin:24px 0;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.term-bar{background:var(--bg3);border-bottom:1px solid var(--dim);padding:10px 14px;display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#ffbd2e}.dot.g{background:#28ca41}
+.term-title{color:var(--dim2);font-size:10px;margin-left:8px;letter-spacing:1px}
+.term-body{padding:18px 20px;font-size:12px;line-height:1.8}
+.tg{color:var(--green)}.tc{color:var(--cyan)}.td{color:var(--dim2)}.tw{color:#fff}
+.blink{display:inline-block;width:7px;height:14px;background:var(--green);vertical-align:middle;animation:blink 1s step-end infinite;margin-left:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* repo cards */
+.repo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.repo-card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:18px;text-decoration:none;display:block;transition:border-color .2s}
+.repo-card:hover{border-color:var(--green)}
+.repo-card h3{color:var(--green);font-size:13px;margin-bottom:6px}
+.repo-card p{color:var(--dim2);font-size:12px;line-height:1.5;margin-bottom:12px}
+.repo-meta{display:flex;gap:12px}
+.repo-lang{font-size:10px;color:var(--dim2)}
+.repo-lang span{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+
+/* footer */
+footer{border-top:1px solid var(--dim);padding:28px 0}
+.foot-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.foot-logo{color:var(--green);font-size:11px;letter-spacing:2px}
+.foot-links{display:flex;gap:20px}
+.foot-links a{color:var(--dim2);font-size:11px;text-decoration:none}
+.foot-links a:hover{color:var(--fg)}
+.foot-copy{color:var(--dim2);font-size:10px;width:100%}
+
+@media(max-width:600px){
+  .flow{gap:4px}.flow-arr{padding:0 2px;font-size:11px}
+  .arch{grid-template-columns:1fr 1fr}
+  .stats-strip{grid-template-columns:1fr 1fr}
+  .s-stat:nth-child(2){border-right:none}
+}
 </style>
 </head>
 <body>
 
-<!-- ── Login ─────────────────────────────────────────────────────────────── -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">  ██╗  ██╗ █████╗ ██╗     ██╗
-  ██║ ██╔╝██╔══██╗██║     ██║
-  █████╔╝ ███████║██║     ██║
-  ██╔═██╗ ██╔══██║██║     ██║
-  ██║  ██╗██║  ██║███████╗██║
-  ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝</div>
-    <h2>Admin Dashboard</h2>
-    <div class="err-msg" id="login-err"></div>
-    <label>Password</label>
-    <input type="password" id="pw-input" autofocus autocomplete="current-password" placeholder="Enter password">
-    <button onclick="doLogin()">▶ &nbsp; ENTER</button>
+<nav>
+  <div class="container nav-inner">
+    <a class="nav-logo" href="/">KALI<em>TERMINAL</em></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="#built">What I built</a>
+      <a href="#stack">Stack</a>
+      <a href="#repos">Repos</a>
+    </div>
   </div>
-</div>
+</nav>
+
+<!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <p class="hero-label">// full-stack project showcase</p>
+    <h1>I built a<br><span class="g">remote terminal</span><br>platform <span class="c">from scratch</span></h1>
+    <p>Android app, WebSocket server, REST API, PostgreSQL database, live admin dashboard — all connected, all deployed. Here's how it works and what went into it.</p>
+    <div class="hero-links">
+      <a class="btn-outline" href="/kali-terminal.apk" download="kali-terminal.apk">▼ Download App</a>
+      <a class="btn-outline cyan" href="#built">Explore the build ↓</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── What I built ───────────────────────────────────────────────────────── -->
+<section class="section" id="built">
+  <div class="container">
+    <p class="s-label">// architecture</p>
+    <h2>Four pieces. One platform.</h2>
+    <p>Every part communicates through a central REST API. No component talks directly to the database — everything goes through the API layer.</p>
+
+    <div class="arch">
+      <div class="arch-node">
+        <span class="arch-icon">📱</span>
+        <div class="arch-name">Android App</div>
+        <div class="arch-tech">Java · WebView<br>xterm.js · WebSocket</div>
+        <span class="tag tag-green">Client</span>
+      </div>
+      <div class="arch-node">
+        <span class="arch-icon">⚡</span>
+        <div class="arch-name">WS Server</div>
+        <div class="arch-tech">Python · aiohttp<br>PTY · JWT auth</div>
+        <span class="tag tag-cyan">Backend</span>
+      </div>
+      <div class="arch-node">
+        <span class="arch-icon">🔌</span>
+        <div class="arch-name">REST API</div>
+        <div class="arch-tech">FastAPI · pg8000<br>OAuth2 · Swagger</div>
+        <span class="tag tag-purple">API</span>
+      </div>
+      <div class="arch-node">
+        <span class="arch-icon">🗄</span>
+        <div class="arch-name">Database</div>
+        <div class="arch-tech">PostgreSQL<br>Sessions · Commands<br>Alerts</div>
+        <span class="tag tag-orange">Storage</span>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-node">Android App</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-node">WebSocket Server</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-node">REST API</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-node">PostgreSQL</div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="s-stat"><span class="n">4</span><span class="l">Services</span></div>
+      <div class="s-stat"><span class="n">3</span><span class="l">Repos</span></div>
+      <div class="s-stat"><span class="n">185KB</span><span class="l">APK size</span></div>
+      <div class="s-stat"><span class="n">0</span><span class="l">Dependencies on phone</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Terminal demo ──────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <p class="s-label cyan">// the terminal</p>
+    <h2>A real shell. On your phone.</h2>
+    <p>The app connects over a secure WebSocket and renders output through xterm.js — full colour support, interactive programs, window resize. The Linux environment lives entirely on the server, so the phone stores nothing.</p>
+
+    <div class="term-mockup">
+      <div class="term-bar">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span class="term-title">kali-terminal · PTY session a3f9c1</span>
+      </div>
+      <div class="term-body">
+        <div><span class="tg">root@kali</span><span class="td">:</span><span class="tc">~</span><span class="td">$</span> <span class="tw">nmap -sV --open 192.168.1.0/24</span></div>
+        <div class="td">Starting Nmap 7.94 ( https://nmap.org )</div>
+        <div class="td">Nmap scan report for 192.168.1.1</div>
+        <div class="td">PORT&nbsp;&nbsp;&nbsp;&nbsp;STATE SERVICE&nbsp; VERSION</div>
+        <div><span class="tg">22/tcp&nbsp;&nbsp;open&nbsp; ssh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OpenSSH 8.9p1</span></div>
+        <div><span class="tg">80/tcp&nbsp;&nbsp;open&nbsp; http&nbsp;&nbsp;&nbsp;&nbsp; nginx 1.22.1</span></div>
+        <div><span class="tg">443/tcp&nbsp;open&nbsp; ssl/http nginx 1.22.1</span></div>
+        <div>&nbsp;</div>
+        <div><span class="tg">root@kali</span><span class="td">:</span><span class="tc">~</span><span class="td">$</span> <span class="tw">whoami</span></div>
+        <div class="tg">root</div>
+        <div><span class="tg">root@kali</span><span class="td">:</span><span class="tc">~</span><span class="td">$</span> <span class="blink"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── The API ────────────────────────────────────────────────────────────── -->
+<section class="section">
+  <div class="container">
+    <p class="s-label purple">// REST API</p>
+    <h2>API-first architecture.</h2>
+    <p>The server never touches the database directly. Everything goes through a FastAPI REST layer with JWT authentication, auto-generated Swagger docs, and paginated endpoints for sessions, commands, and alerts.</p>
+
+    <div class="code-block">
+      <div class="code-bar"><span>Python · FastAPI</span><span style="color:var(--green);font-size:10px">● live on Railway</span></div>
+      <div class="code-body">
+<span class="cm"># JWT-authenticated session endpoint</span><br>
+<span class="dc">@app</span>.<span class="fn">get</span>(<span class="st">"/api/v1/sessions"</span>, response_model=<span class="kw">List</span>[Session])<br>
+<span class="kw">def</span> <span class="fn">list_sessions</span>(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;page:&nbsp;&nbsp; <span class="kw">int</span> = Query(<span class="st">1</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;active: <span class="kw">Optional</span>[<span class="kw">bool</span>] = Query(<span class="kw">None</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;user:&nbsp;&nbsp; <span class="kw">str</span> = Depends(verify_token),<br>
+):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># paginated, filterable, JWT-protected</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> { <span class="st">"sessions"</span>: [...], <span class="st">"pagination"</span>: {...} }
+      </div>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="top"><span class="ico">🔐</span><h3>JWT Authentication</h3></div>
+        <p>OAuth2 password flow. Every endpoint validates a signed JWT. Tokens auto-refresh on the client.</p>
+      </div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">📄</span><h3>Auto Swagger Docs</h3></div>
+        <p>FastAPI generates live interactive docs at <code style="color:var(--green);font-size:11px">/docs</code>. Every endpoint is documented and testable.</p>
+      </div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">🔗</span><h3>Internal Endpoints</h3></div>
+        <p>Private <code style="color:var(--green);font-size:11px">/internal</code> routes let the WebSocket server log sessions, commands, and alerts without DB access.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ── Dashboard ─────────────────────────────────────────────────────────── -->
-<div id="dashboard">
-  <header>
-    <div class="logo">KALI<em>TERMINAL</em> &nbsp;·&nbsp; Admin</div>
-    <div id="hdr-right">
-      <span id="countdown">refresh in 30s</span>
-      <span id="alert-badge" onclick="scrollToAlerts()">⚠ 0 alerts</span>
-      <button class="hdr-btn" onclick="load()">↺ Refresh</button>
-      <button class="hdr-btn red" onclick="doLogout()">⏻ Logout</button>
-    </div>
-  </header>
+<section class="section">
+  <div class="container">
+    <p class="s-label orange">// admin dashboard</p>
+    <h2>Watch and control every session.</h2>
+    <p>The web dashboard connects to the live API. As admin you can see every session, watch what anyone is typing in real time, and kill a connection instantly — from any browser.</p>
 
-  <main>
-    <div class="stats">
-      <div class="stat"><span class="n g" id="n-sess">—</span><span class="lbl">Total Sessions</span></div>
-      <div class="stat"><span class="n c" id="n-active">—</span><span class="lbl">Active Now</span></div>
-      <div class="stat"><span class="n y" id="n-cmds">—</span><span class="lbl">Commands Run</span></div>
-      <div class="stat"><span class="n r" id="n-alerts">—</span><span class="lbl">Alerts</span></div>
-    </div>
-
-    <div class="card alert-card" id="alerts-card">
-      <div class="card-head">
-        <h2>⚠ Keyword Alerts</h2>
-        <button class="ack-btn" onclick="ackAlerts()">✓ Dismiss All</button>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="top"><span class="ico">👁</span><h3>Live View</h3></div>
+        <p>Click Watch on any active session to open a live terminal mirror inside the browser. Read-only — the user never knows.</p>
       </div>
-      <div id="alerts-body"></div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">■</span><h3>Kill Sessions</h3></div>
+        <p>One click to drop a connection. The WebSocket closes server-side, the user's terminal exits instantly.</p>
+      </div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">⚠</span><h3>Keyword Alerts</h3></div>
+        <p>Dangerous commands like <code style="color:var(--red);font-size:11px">rm -rf</code> or <code style="color:var(--red);font-size:11px">nc -e</code> trigger instant alerts logged to the database.</p>
+      </div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">🛡</span><h3>HMAC Cookie Auth</h3></div>
+        <p>Dashboard login uses HMAC-signed session cookies with 7-day expiry and per-IP rate limiting on login attempts.</p>
+      </div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">📡</span><h3>IP Logging</h3></div>
+        <p>Every connection logs the real client IP via X-Forwarded-For, stored per session in PostgreSQL.</p>
+      </div>
+      <div class="feat-card">
+        <div class="top"><span class="ico">🔄</span><h3>Auto Deploy</h3></div>
+        <p>GitHub Actions triggers a Railway deploy on every push to master. Zero-downtime continuous deployment.</p>
+      </div>
     </div>
-
-    <div class="card">
-      <div class="card-head"><h2>Sessions</h2><span class="badge" id="sess-badge">—</span></div>
-      <div id="sess-body"><div class="empty">Loading…</div></div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h2>Command History</h2><span class="badge" id="cmd-badge">—</span></div>
-      <div id="cmd-body"><div class="empty">Loading…</div></div>
-    </div>
-
-    <div id="footer">—</div>
-  </main>
-</div>
-
-<!-- ── Live view modal ───────────────────────────────────────────────────── -->
-<div id="modal">
-  <div id="modal-box">
-    <div id="modal-head">
-      <span id="modal-title">LIVE VIEW</span>
-      <button id="modal-close" onclick="closeWatch()">×</button>
-    </div>
-    <div id="modal-term"></div>
   </div>
-</div>
+</section>
 
-<script>
-const API = 'https://kali-terminal-api-production.up.railway.app';
-const SRV = 'https://kali-terminal-production.up.railway.app';
+<!-- ── Stack ──────────────────────────────────────────────────────────────── -->
+<section class="section" id="stack">
+  <div class="container">
+    <p class="s-label">// tech stack</p>
+    <h2>Everything used to build it.</h2>
+    <p>Chosen for reliability, minimal dependencies, and zero cost to run.</p>
 
-let jwt = localStorage.getItem('kt_jwt') || null;
-let countdown = 30, timer;
-let watchWs = null, watchTerm = null, watchFit = null;
+    <div class="tech-grid">
+      <div class="tech-card"><span class="tech-icon">🐍</span><div class="tech-info"><h3>Python 3</h3><p>Server + API backend</p></div></div>
+      <div class="tech-card"><span class="tech-icon">⚡</span><div class="tech-info"><h3>FastAPI</h3><p>REST API with auto docs</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🌐</span><div class="tech-info"><h3>aiohttp</h3><p>Async WebSocket server</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🗄</span><div class="tech-info"><h3>PostgreSQL</h3><p>Sessions, commands, alerts</p></div></div>
+      <div class="tech-card"><span class="tech-icon">📱</span><div class="tech-info"><h3>Android / Java</h3><p>Native APK, WebView bridge</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🖥</span><div class="tech-info"><h3>xterm.js</h3><p>Terminal emulation in browser</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🔐</span><div class="tech-info"><h3>JWT / OAuth2</h3><p>Auth across all services</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🚂</span><div class="tech-info"><h3>Railway</h3><p>Deployment + PostgreSQL</p></div></div>
+      <div class="tech-card"><span class="tech-icon">⚙</span><div class="tech-info"><h3>GitHub Actions</h3><p>CI/CD auto-deploy</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🐧</span><div class="tech-info"><h3>Linux PTY</h3><p>Real terminal emulation</p></div></div>
+    </div>
+  </div>
+</section>
 
-// ── Boot ──────────────────────────────────────────────────────────────────
-if (jwt) showDashboard();
+<!-- ── Repos ──────────────────────────────────────────────────────────────── -->
+<section class="section" id="repos">
+  <div class="container">
+    <p class="s-label cyan">// open source</p>
+    <h2>All three repos are public.</h2>
+    <p>Read the code, self-host the server, fork the app. MIT licensed.</p>
 
-document.getElementById('pw-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
+    <div class="repo-grid">
+      <a class="repo-card" href="https://github.com/CCguvycu/kali-terminal-android">
+        <h3>kali-terminal-android</h3>
+        <p>Android APK. WebView + xterm.js + JavascriptInterface bridge. Connects to any server URL.</p>
+        <div class="repo-meta"><span class="repo-lang"><span style="background:#b07219"></span>Java</span></div>
+      </a>
+      <a class="repo-card" href="https://github.com/CCguvycu/kali-terminal-server">
+        <h3>kali-terminal-server</h3>
+        <p>aiohttp WebSocket server. PTY sessions, live view, keyword alerts, dashboard, HMAC cookie auth.</p>
+        <div class="repo-meta"><span class="repo-lang"><span style="background:#3572A5"></span>Python</span></div>
+      </a>
+      <a class="repo-card" href="https://github.com/CCguvycu/kali-terminal-api">
+        <h3>kali-terminal-api</h3>
+        <p>FastAPI REST backend. JWT auth, paginated endpoints, internal routes for the server, Swagger docs.</p>
+        <div class="repo-meta"><span class="repo-lang"><span style="background:#3572A5"></span>Python</span></div>
+      </a>
+    </div>
+  </div>
+</section>
 
-async function doLogin() {
-  const pw = document.getElementById('pw-input').value.trim();
-  if (!pw) return;
-  const err = document.getElementById('login-err');
-  err.style.display = 'none';
-  try {
-    const fd = new FormData();
-    fd.append('username', 'admin');
-    fd.append('password', pw);
-    const r = await fetch(API + '/api/v1/auth/login', { method: 'POST', body: fd });
-    if (!r.ok) { err.textContent = 'Incorrect password.'; err.style.display = 'block'; return; }
-    jwt = (await r.json()).access_token;
-    localStorage.setItem('kt_jwt', jwt);
-    showDashboard();
-  } catch(e) {
-    err.textContent = 'Could not reach server. Try again.';
-    err.style.display = 'block';
-  }
-}
+<!-- ── CTA ────────────────────────────────────────────────────────────────── -->
+<section class="section" style="text-align:center;border-bottom:none">
+  <div class="container">
+    <p class="s-label" style="text-align:center">// try it</p>
+    <h2 style="margin-bottom:10px">Download the app.</h2>
+    <p style="margin-bottom:32px;margin-left:auto;margin-right:auto">185 KB. No account. No storage. Just install and connect.</p>
+    <a class="btn-outline" style="display:inline-flex;padding:14px 32px;border-color:var(--green);color:var(--green);font-size:13px" href="/kali-terminal.apk" download="kali-terminal.apk">▼ Download APK &nbsp;<span style="opacity:.6;font-size:11px;font-weight:normal">185 KB</span></a>
+  </div>
+</section>
 
-function doLogout() {
-  localStorage.removeItem('kt_jwt');
-  jwt = null;
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('pw-input').value = '';
-}
+<footer>
+  <div class="container foot-inner">
+    <span class="foot-logo">KALITERMINAL</span>
+    <div class="foot-links">
+      <a href="/">Home</a>
+      <a href="https://github.com/CCguvycu">GitHub</a>
+      <a href="https://github.com/CCguvycu/kali-terminal-android/blob/master/LICENSE">MIT License</a>
+    </div>
+    <span class="foot-copy">Built from scratch · Open source · Self-hostable</span>
+  </div>
+</footer>
 
-function showDashboard() {
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  load();
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────
-function apiFetch(path) {
-  return fetch(API + path, { headers: { Authorization: 'Bearer ' + jwt } });
-}
-function srvPost(path) {
-  return fetch(SRV + path, { method: 'POST', headers: { Authorization: 'Bearer ' + jwt } });
-}
-
-function fmt(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short' }) + ' ' + d.toLocaleTimeString();
-}
-function dur(a, b) {
-  if (!a) return '—';
-  const s = Math.floor((new Date(b || Date.now()) - new Date(a)) / 1000);
-  if (s < 60) return s + 's';
-  if (s < 3600) return Math.floor(s/60) + 'm';
-  return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm';
-}
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function scrollToAlerts() {
-  document.getElementById('alerts-card').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ── Auto-refresh ──────────────────────────────────────────────────────────
-function tick() {
-  countdown--;
-  document.getElementById('countdown').textContent = 'refresh in ' + countdown + 's';
-  if (countdown <= 0) { countdown = 30; load(); }
-}
-function startTimer() { clearInterval(timer); countdown = 30; timer = setInterval(tick, 1000); }
-
-// ── Load data ─────────────────────────────────────────────────────────────
-async function load() {
-  startTimer();
-  try {
-    const [statsR, sessR, cmdsR, alertsR] = await Promise.all([
-      apiFetch('/api/v1/stats'),
-      apiFetch('/api/v1/sessions?limit=50'),
-      apiFetch('/api/v1/commands?limit=100'),
-      apiFetch('/api/v1/alerts?acknowledged=false&limit=50'),
-    ]);
-
-    if (statsR.status === 401) { doLogout(); return; }
-
-    const stats   = await statsR.json();
-    const sessData = await sessR.json();
-    const cmdsData = await cmdsR.json();
-    const alertData = await alertsR.json();
-
-    const sessions = sessData.sessions || [];
-    const commands = cmdsData.commands || [];
-    const alerts   = alertData.alerts  || [];
-
-    // Stats
-    document.getElementById('n-sess').textContent   = stats.total_sessions   ?? '—';
-    document.getElementById('n-active').textContent = stats.active_sessions  ?? '—';
-    document.getElementById('n-cmds').textContent   = stats.total_commands   ?? '—';
-    document.getElementById('n-alerts').textContent = stats.unread_alerts    ?? '—';
-
-    // Alert badge in header
-    const ab = document.getElementById('alert-badge');
-    if (stats.unread_alerts > 0) {
-      ab.textContent = '⚠ ' + stats.unread_alerts + ' alert' + (stats.unread_alerts > 1 ? 's' : '');
-      ab.style.display = 'inline';
-    } else ab.style.display = 'none';
-
-    // Alerts card
-    const ac = document.getElementById('alerts-card');
-    if (alerts.length) {
-      ac.style.display = 'block';
-      let h = '<table><thead><tr><th>Time</th><th>Session</th><th>Command</th><th>Keyword</th></tr></thead><tbody>';
-      alerts.forEach(a => {
-        h += `<tr><td class="ts">${fmt(a.triggered_at)}</td><td class="sid">${esc(a.session_id)}</td><td class="cmd-text">${esc(a.command)}</td><td><span class="kw">${esc(a.keyword)}</span></td></tr>`;
-      });
-      document.getElementById('alerts-body').innerHTML = h + '</tbody></table>';
-    } else ac.style.display = 'none';
-
-    // Sessions
-    document.getElementById('sess-badge').textContent = sessions.length + ' rows';
-    if (!sessions.length) {
-      document.getElementById('sess-body').innerHTML = '<div class="empty">No sessions yet</div>';
-    } else {
-      let h = '<table><thead><tr><th>ID</th><th>IP</th><th>Connected</th><th>Duration</th><th>Cmds</th><th>Status</th><th></th></tr></thead><tbody>';
-      sessions.forEach(s => {
-        const active = s.active;
-        const btns = active
-          ? `<button class="act-btn watch-btn" onclick="openWatch('${esc(s.session_id)}')">◉ Watch</button><button class="act-btn kill-btn" onclick="killSession('${esc(s.session_id)}',this)">■ Stop</button>`
-          : '';
-        h += `<tr>
-          <td class="sid">${esc(s.session_id)}</td>
-          <td class="ip">${esc(s.ip_address || '—')}</td>
-          <td class="ts">${fmt(s.connected_at)}</td>
-          <td class="ts">${dur(s.connected_at, s.disconnected_at)}</td>
-          <td>${s.command_count}</td>
-          <td><span class="${active ? 'pill-on' : 'pill-off'}">${active ? '● live' : 'closed'}</span></td>
-          <td>${btns}</td>
-        </tr>`;
-      });
-      document.getElementById('sess-body').innerHTML = h + '</tbody></table>';
-    }
-
-    // Commands
-    document.getElementById('cmd-badge').textContent = commands.length + ' rows';
-    if (!commands.length) {
-      document.getElementById('cmd-body').innerHTML = '<div class="empty">No commands yet</div>';
-    } else {
-      let h = '<table><thead><tr><th>Command</th><th>Session</th><th>Time</th></tr></thead><tbody>';
-      commands.forEach(c => {
-        h += `<tr><td class="cmd-text">${esc(c.command)}</td><td class="sid">${esc(c.session_id)}</td><td class="ts">${fmt(c.executed_at)}</td></tr>`;
-      });
-      document.getElementById('cmd-body').innerHTML = h + '</tbody></table>';
-    }
-
-    document.getElementById('footer').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-  } catch(e) {
-    document.getElementById('footer').textContent = 'Error: ' + e;
-  }
-}
-
-// ── Kill session ──────────────────────────────────────────────────────────
-async function killSession(sid, btn) {
-  if (!confirm('Stop session ' + sid + '?')) return;
-  btn.disabled = true; btn.textContent = '...';
-  try {
-    const r = await srvPost('/api/kill/' + sid);
-    if (r.ok) { btn.textContent = '✓'; setTimeout(load, 800); }
-    else { btn.textContent = '✗'; btn.disabled = false; }
-  } catch(e) { btn.textContent = '✗'; btn.disabled = false; }
-}
-
-// ── Ack alerts ────────────────────────────────────────────────────────────
-async function ackAlerts() {
-  await fetch(API + '/api/v1/alerts/ack', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + jwt }
-  });
-  load();
-}
-
-// ── Live view ─────────────────────────────────────────────────────────────
-function openWatch(sid) {
-  const modal = document.getElementById('modal');
-  document.getElementById('modal-title').textContent = 'LIVE VIEW — ' + sid;
-  modal.className = 'open';
-
-  if (watchTerm) { watchTerm.dispose(); watchTerm = null; }
-  if (watchWs)   { watchWs.close();    watchWs   = null; }
-
-  watchTerm = new Terminal({
-    theme: { background:'#000', foreground:'#c8d8e8', cursor:'#00ff41' },
-    fontFamily: '"Courier New",monospace',
-    fontSize: 13, lineHeight: 1.2,
-    cursorBlink: true, scrollback: 2000,
-  });
-  watchFit = new FitAddon.FitAddon();
-  watchTerm.loadAddon(watchFit);
-  watchTerm.open(document.getElementById('modal-term'));
-  watchFit.fit();
-
-  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-  watchWs = new WebSocket(`${proto}://kali-terminal-production.up.railway.app/api/watch/${sid}`);
-  watchWs.onmessage = e => watchTerm.write(e.data);
-  watchWs.onclose   = () => watchTerm && watchTerm.write('\r\n\x1b[90m[Session ended]\x1b[0m\r\n');
-}
-
-function closeWatch() {
-  if (watchWs)   { watchWs.close();    watchWs   = null; }
-  if (watchTerm) { watchTerm.dispose(); watchTerm = null; }
-  document.getElementById('modal').className = '';
-}
-
-window.addEventListener('resize', () => { if (watchFit) watchFit.fit(); });
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal')) closeWatch();
-});
-</script>
 </body>
 </html>
