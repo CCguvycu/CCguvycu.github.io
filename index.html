@@ -3,472 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Kali Terminal — a full Linux terminal on Android. No storage, no root. Just connect and go.">
+<meta name="description" content="Kali Terminal — a full-stack remote terminal platform. Android app, WebSocket server, REST API, PostgreSQL, live admin dashboard. Built from scratch.">
 <meta property="og:title" content="Kali Terminal">
-<meta property="og:description" content="A full Linux terminal on Android. Zero storage, no root required.">
+<meta property="og:description" content="A full-stack remote terminal platform built from scratch. Android app, WebSocket server, REST API, live admin dashboard.">
 <meta property="og:type" content="website">
 <title>Kali Terminal</title>
 <style>
-/* ── Reset & tokens ──────────────────────────────────────────────────────── */
-:root {
-  --bg:    #0a0e17;
-  --bg2:   #0f1521;
-  --bg3:   #161d2e;
-  --green: #00ff41;
-  --cyan:  #00d4ff;
-  --red:   #ff4444;
-  --dim:   #2a3a4a;
-  --dim2:  #6a7a8a;
-  --fg:    #c8d8e8;
-}
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: 'Courier New', Courier, monospace;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+:root{--bg:#0a0e17;--bg2:#0f1521;--bg3:#161d2e;--green:#00ff41;--cyan:#00d4ff;--red:#ff4444;--yellow:#ffd700;--orange:#ff8c00;--purple:#a855f7;--dim:#2a3a4a;--dim2:#6a7a8a;--fg:#c8d8e8}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Courier New',Courier,monospace;min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.06) 2px,rgba(0,0,0,.06) 4px);pointer-events:none;z-index:9999}
+.container{max-width:960px;margin:0 auto;padding:0 24px}
 
-/* scanline overlay */
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(0,0,0,.06) 2px, rgba(0,0,0,.06) 4px
-  );
-  pointer-events: none;
-  z-index: 9999;
-}
+/* ── Nav ── */
+nav{border-bottom:1px solid var(--dim);padding:15px 0;position:sticky;top:0;z-index:100;background:rgba(10,14,23,.93);backdrop-filter:blur(8px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between}
+.nav-logo{color:var(--green);font-size:13px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 14px #00ff4144;text-decoration:none}
+.nav-logo em{color:var(--cyan);font-style:normal}
+.nav-links{display:flex;gap:22px}
+.nav-links a{color:var(--dim2);font-size:11px;text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .15s}
+.nav-links a:hover{color:var(--green)}
 
-/* ── Layout ──────────────────────────────────────────────────────────────── */
-.container { max-width: 860px; margin: 0 auto; padding: 0 24px; }
+/* ── Hero ── */
+.hero{padding:80px 0 72px;text-align:center;position:relative}
+.hero::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,#00ff4108 0%,transparent 68%);pointer-events:none}
+.hero-label{color:var(--dim2);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:18px}
+.hero h1{font-size:clamp(28px,7vw,58px);font-weight:bold;color:#fff;line-height:1.12;margin-bottom:18px;letter-spacing:1px}
+.hero h1 .g{color:var(--green);text-shadow:0 0 28px #00ff4144}
+.hero h1 .c{color:var(--cyan)}
+.hero p{color:var(--dim2);font-size:14px;line-height:1.8;max-width:560px;margin:0 auto 44px}
 
-/* ── Nav ─────────────────────────────────────────────────────────────────── */
-nav {
-  border-bottom: 1px solid var(--dim);
-  padding: 16px 0;
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(10,14,23,.92);
-  backdrop-filter: blur(8px);
-}
-.nav-inner {
-  display: flex; align-items: center; justify-content: space-between;
-}
-.nav-logo {
-  color: var(--green);
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 3px;
-  text-shadow: 0 0 14px #00ff4144;
-  text-decoration: none;
-}
-.nav-logo em { color: var(--cyan); font-style: normal; }
-.nav-links { display: flex; gap: 20px; }
-.nav-links a {
-  color: var(--dim2);
-  font-size: 11px;
-  text-decoration: none;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  transition: color .15s;
-}
-.nav-links a:hover { color: var(--green); }
+/* download button */
+.dl-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 36px;background:var(--green);color:#000;font-family:'Courier New',monospace;font-size:14px;font-weight:bold;letter-spacing:1.5px;text-decoration:none;border-radius:5px;box-shadow:0 0 28px #00ff4130;transition:opacity .15s,box-shadow .15s;margin-bottom:14px}
+.dl-btn:hover{opacity:.9;box-shadow:0 0 42px #00ff4155}
+.dl-size{opacity:.55;font-size:11px;font-weight:normal}
+.hero-sub{color:var(--dim2);font-size:11px;margin-bottom:0}
+.hero-sub a{color:var(--dim2)}
 
-/* ── Hero ────────────────────────────────────────────────────────────────── */
-.hero {
-  padding: 80px 0 72px;
-  text-align: center;
-  position: relative;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -100px; left: 50%; transform: translateX(-50%);
-  width: 500px; height: 500px;
-  background: radial-gradient(ellipse, #00ff4108 0%, transparent 70%);
-  pointer-events: none;
-}
+/* term preview */
+.term-preview{background:#000;border:1px solid var(--dim);border-radius:8px;max-width:540px;margin:48px auto 0;text-align:left;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.5)}
+.term-bar{background:var(--bg3);border-bottom:1px solid var(--dim);padding:10px 14px;display:flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#ffbd2e}.dot.g{background:#28ca41}
+.term-title{color:var(--dim2);font-size:10px;margin-left:8px;letter-spacing:1px}
+.term-body{padding:18px 20px;font-size:12px;line-height:1.8}
+.tg{color:var(--green)}.tc{color:var(--cyan)}.td{color:var(--dim2)}.tw{color:#fff}
+.blink{display:inline-block;width:7px;height:14px;background:var(--green);vertical-align:middle;animation:blink 1s step-end infinite;margin-left:1px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
-.app-icon {
-  width: 100px; height: 100px;
-  border-radius: 24px;
-  background: var(--bg3);
-  border: 1px solid var(--dim);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 28px;
-  box-shadow: 0 0 40px #00ff4112, 0 8px 32px rgba(0,0,0,.4);
-  animation: float 4s ease-in-out infinite;
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
-}
+/* ── Sections ── */
+.section{padding:64px 0;border-top:1px solid var(--dim)}
+.s-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;color:var(--green)}
+.s-label.cyan{color:var(--cyan)}
+.s-label.purple{color:var(--purple)}
+.s-label.orange{color:var(--orange)}
+.section h2{font-size:clamp(20px,4vw,34px);color:#fff;margin-bottom:12px;letter-spacing:.5px}
+.section>.container>p{color:var(--dim2);font-size:13px;line-height:1.8;max-width:620px;margin-bottom:36px}
 
-.hero h1 {
-  font-size: clamp(28px, 6vw, 48px);
-  font-weight: bold;
-  letter-spacing: 2px;
-  color: #fff;
-  margin-bottom: 14px;
-}
-.hero h1 em { color: var(--green); font-style: normal; text-shadow: 0 0 20px #00ff4144; }
+/* ── Architecture ── */
+.arch{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--dim);border-radius:8px;overflow:hidden;margin-bottom:20px}
+@media(max-width:680px){.arch{grid-template-columns:1fr 1fr}}
+.arch-node{padding:24px 14px;border-right:1px solid var(--dim);text-align:center;background:var(--bg2)}
+.arch-node:last-child{border-right:none}
+.arch-icon{font-size:28px;margin-bottom:10px;display:block}
+.arch-name{color:#fff;font-size:12px;font-weight:bold;margin-bottom:5px;letter-spacing:.5px}
+.arch-tech{color:var(--dim2);font-size:10px;line-height:1.5}
+.tag{display:inline-block;font-size:9px;padding:1px 6px;border-radius:3px;margin-top:7px;letter-spacing:.5px;text-transform:uppercase}
+.tag-green{background:#00ff4115;color:var(--green);border:1px solid #00ff4130}
+.tag-cyan{background:#00d4ff15;color:var(--cyan);border:1px solid #00d4ff30}
+.tag-purple{background:#a855f715;color:var(--purple);border:1px solid #a855f730}
+.tag-orange{background:#ff8c0015;color:var(--orange);border:1px solid #ff8c0030}
 
-.hero .sub {
-  font-size: 14px;
-  color: var(--dim2);
-  line-height: 1.7;
-  max-width: 480px;
-  margin: 0 auto 40px;
-}
+.flow{display:flex;align-items:center;justify-content:center;gap:0;margin:14px 0 32px;flex-wrap:wrap}
+.flow-node{background:var(--bg2);border:1px solid var(--dim);border-radius:5px;padding:8px 14px;font-size:11px;color:var(--fg);white-space:nowrap}
+.flow-arr{color:var(--dim);font-size:14px;padding:0 8px}
 
-/* terminal preview */
-.term-preview {
-  background: #000;
-  border: 1px solid var(--dim);
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 520px;
-  margin: 0 auto 44px;
-  text-align: left;
-  font-size: 13px;
-  line-height: 1.7;
-  box-shadow: 0 8px 40px rgba(0,0,0,.5);
-}
-.term-bar {
-  display: flex; gap: 6px; margin-bottom: 14px;
-}
-.term-dot {
-  width: 10px; height: 10px; border-radius: 50%;
-}
-.term-dot.r { background: #ff5f57; }
-.term-dot.y { background: #ffbd2e; }
-.term-dot.g { background: #28ca41; }
-.g  { color: var(--green); }
-.c  { color: var(--cyan); }
-.d  { color: var(--dim2); }
-.w  { color: #fff; }
-.blink {
-  display: inline-block;
-  width: 8px; height: 14px;
-  background: var(--green);
-  vertical-align: middle;
-  animation: blink 1s step-end infinite;
-  margin-left: 1px;
-}
-@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+/* ── Stats strip ── */
+.stats-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));border:1px solid var(--dim);border-radius:6px;overflow:hidden;margin:32px 0}
+.s-stat{padding:24px 16px;text-align:center;border-right:1px solid var(--dim);background:var(--bg2)}
+.s-stat:last-child{border-right:none}
+.s-stat .n{display:block;font-size:30px;font-weight:bold;color:var(--green);text-shadow:0 0 10px #00ff4133}
+.s-stat .l{display:block;color:var(--dim2);font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-top:4px}
 
-/* download buttons */
-.btn-row {
-  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
-}
-.btn-primary {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 32px;
-  background: var(--green);
-  color: #000;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-  text-decoration: none;
-  border-radius: 5px;
-  box-shadow: 0 0 24px #00ff4130;
-  transition: opacity .15s, box-shadow .15s;
-}
-.btn-primary:hover { opacity: .9; box-shadow: 0 0 36px #00ff4155; }
-.btn-secondary {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 28px;
-  background: transparent;
-  color: var(--fg);
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-decoration: none;
-  border: 1px solid var(--dim);
-  border-radius: 5px;
-  transition: border-color .15s, color .15s;
-}
-.btn-secondary:hover { border-color: var(--cyan); color: var(--cyan); }
-.meta { color: var(--dim2); font-size: 11px; margin-top: 14px; }
-.meta a { color: var(--dim2); }
+/* ── Features ── */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.feat-card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:22px 18px;transition:border-color .2s}
+.feat-card:hover{border-color:var(--dim2)}
+.feat-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.feat-ico{font-size:20px}
+.feat-card h3{color:#fff;font-size:13px;letter-spacing:.3px}
+.feat-card p{color:var(--dim2);font-size:12px;line-height:1.6}
 
-/* ── Stats bar ───────────────────────────────────────────────────────────── */
-.stats-bar {
-  border-top: 1px solid var(--dim);
-  border-bottom: 1px solid var(--dim);
-  padding: 22px 0;
-  display: flex;
-  justify-content: center;
-  gap: 60px;
-  flex-wrap: wrap;
-}
-.stat { text-align: center; }
-.stat .n { display: block; font-size: 26px; font-weight: bold; color: var(--green); }
-.stat .l { display: block; color: var(--dim2); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+/* ── Code block ── */
+.code-block{background:#000;border:1px solid var(--dim);border-radius:6px;overflow:hidden;margin:20px 0}
+.code-bar{background:var(--bg3);border-bottom:1px solid var(--dim);padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.code-bar span{color:var(--dim2);font-size:10px;letter-spacing:1px}
+.code-body{padding:18px 20px;font-size:12px;line-height:1.8;overflow-x:auto}
+.kw{color:var(--cyan)}.fn{color:var(--green)}.st{color:var(--yellow)}.cm{color:var(--dim2)}.dc{color:var(--orange)}
 
-/* ── Features ────────────────────────────────────────────────────────────── */
-.section { padding: 64px 0; }
-.section-label {
-  color: var(--green);
-  font-size: 10px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.section h2 {
-  font-size: clamp(20px, 4vw, 30px);
-  color: #fff;
-  margin-bottom: 40px;
-  letter-spacing: 1px;
-}
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-.feat {
-  background: var(--bg2);
-  border: 1px solid var(--dim);
-  border-radius: 8px;
-  padding: 22px 18px;
-  transition: border-color .2s;
-}
-.feat:hover { border-color: var(--dim2); }
-.feat-icon { font-size: 22px; margin-bottom: 10px; }
-.feat h3 { color: var(--fg); font-size: 13px; margin-bottom: 6px; }
-.feat p { color: var(--dim2); font-size: 12px; line-height: 1.6; }
+/* ── Tech grid ── */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px}
+.tech-card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:16px 14px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s}
+.tech-card:hover{border-color:var(--dim2)}
+.tech-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.tech-info h3{color:var(--fg);font-size:12px;margin-bottom:3px}
+.tech-info p{color:var(--dim2);font-size:11px;line-height:1.4}
 
-/* ── How it works ────────────────────────────────────────────────────────── */
-.steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0;
-  border: 1px solid var(--dim);
-  border-radius: 8px;
-  overflow: hidden;
-}
-.step {
-  padding: 28px 22px;
-  border-right: 1px solid var(--dim);
-  position: relative;
-}
-.step:last-child { border-right: none; }
-.step-num {
-  font-size: 32px;
-  font-weight: bold;
-  color: var(--dim);
-  line-height: 1;
-  margin-bottom: 12px;
-}
-.step h3 { color: var(--fg); font-size: 13px; margin-bottom: 6px; }
-.step p { color: var(--dim2); font-size: 12px; line-height: 1.6; }
-.step code {
-  font-size: 11px;
-  color: var(--green);
-  background: #00ff410d;
-  border: 1px solid #00ff4120;
-  border-radius: 3px;
-  padding: 1px 6px;
-}
+/* ── Repo cards ── */
+.repo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.repo-card{background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:20px;text-decoration:none;display:block;transition:border-color .2s}
+.repo-card:hover{border-color:var(--green)}
+.repo-card h3{color:var(--green);font-size:13px;margin-bottom:7px}
+.repo-card p{color:var(--dim2);font-size:12px;line-height:1.5;margin-bottom:14px}
+.repo-lang{font-size:10px;color:var(--dim2)}
+.repo-lang span{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
 
-/* ── CTA ─────────────────────────────────────────────────────────────────── */
-.cta {
-  text-align: center;
-  padding: 64px 0;
-  border-top: 1px solid var(--dim);
-}
-.cta h2 { font-size: 24px; color: #fff; margin-bottom: 10px; }
-.cta p { color: var(--dim2); font-size: 13px; margin-bottom: 32px; }
+/* ── CTA ── */
+.cta{text-align:center;padding:72px 0;border-top:1px solid var(--dim)}
+.cta h2{font-size:clamp(20px,4vw,32px);color:#fff;margin-bottom:10px}
+.cta p{color:var(--dim2);font-size:13px;margin-bottom:36px}
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
-footer {
-  border-top: 1px solid var(--dim);
-  padding: 24px 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.footer-logo { color: var(--green); font-size: 11px; letter-spacing: 2px; }
-.footer-links { display: flex; gap: 20px; }
-.footer-links a { color: var(--dim2); font-size: 11px; text-decoration: none; }
-.footer-links a:hover { color: var(--fg); }
-.footer-copy { color: var(--dim2); font-size: 10px; width: 100%; }
+/* ── Footer ── */
+footer{border-top:1px solid var(--dim);padding:26px 0}
+.foot-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.foot-logo{color:var(--green);font-size:11px;letter-spacing:2px}
+.foot-links{display:flex;gap:20px}
+.foot-links a{color:var(--dim2);font-size:11px;text-decoration:none}
+.foot-links a:hover{color:var(--fg)}
+.foot-copy{color:var(--dim2);font-size:10px;width:100%}
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .steps { grid-template-columns: 1fr; }
-  .step { border-right: none; border-bottom: 1px solid var(--dim); }
-  .step:last-child { border-bottom: none; }
-  .stats-bar { gap: 32px; }
-  footer { flex-direction: column; align-items: flex-start; }
+@media(max-width:600px){
+  .arch{grid-template-columns:1fr 1fr}
+  .stats-strip{grid-template-columns:1fr 1fr}
+  .s-stat:nth-child(2){border-right:none}
+  .flow-arr{padding:0 3px;font-size:11px}
 }
 </style>
 </head>
 <body>
 
-<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
 <nav>
   <div class="container nav-inner">
-    <a class="nav-logo" href="#">KALI<em>TERMINAL</em></a>
+    <a class="nav-logo" href="/">KALI<em>TERMINAL</em></a>
     <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#install">Install</a>
-      <a href="/dashboard.html">Dashboard</a>
-      <a href="https://github.com/CCguvycu/kali-terminal-android">GitHub</a>
+      <a href="#built">What I built</a>
+      <a href="#stack">Stack</a>
+      <a href="#repos">Repos</a>
     </div>
   </div>
 </nav>
 
-<!-- ── Hero ─────────────────────────────────────────────────────────────── -->
+<!-- ── Hero ── -->
 <section class="hero">
   <div class="container">
-    <div class="app-icon">
-      <svg width="62" height="62" viewBox="0 0 108 108" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18 30L48 54L18 78L30 78L42 54L30 30Z" fill="#00ff41"/>
-        <path d="M54 66H88V76H54Z" fill="#00ff41"/>
-      </svg>
-    </div>
+    <p class="hero-label">// full-stack project showcase</p>
+    <h1>I built a<br><span class="g">remote terminal</span><br>platform <span class="c">from scratch</span></h1>
+    <p>Android app, WebSocket server, REST API, PostgreSQL database, live admin dashboard — all connected, all deployed.</p>
 
-    <h1>Kali <em>Terminal</em></h1>
-    <p class="sub">A full Linux terminal on Android.<br>Zero local storage. No root required. Just connect.</p>
+    <a class="dl-btn" href="/kali-terminal.apk" download="kali-terminal.apk">
+      &#x25BC; Download APK <span class="dl-size">185 KB</span>
+    </a><br>
+    <span class="hero-sub">Android 5.0+ &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; <a href="https://github.com/CCguvycu/kali-terminal-android">Source on GitHub</a></span>
 
     <div class="term-preview">
       <div class="term-bar">
-        <div class="term-dot r"></div>
-        <div class="term-dot y"></div>
-        <div class="term-dot g"></div>
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span class="term-title">kali-terminal · PTY session a3f9c1</span>
       </div>
-      <div><span class="g">root@kali</span><span class="d">:</span><span class="c">~</span><span class="d">$</span> <span class="w">nmap -sV 192.168.1.1</span></div>
-      <div class="d">Starting Nmap 7.94 ...</div>
-      <div class="d">PORT&nbsp;&nbsp;&nbsp;STATE SERVICE VERSION</div>
-      <div><span class="g">22/tcp open  ssh</span>    <span class="d">OpenSSH 8.9</span></div>
-      <div><span class="g">80/tcp open  http</span>   <span class="d">nginx 1.22</span></div>
-      <div>&nbsp;</div>
-      <div><span class="g">root@kali</span><span class="d">:</span><span class="c">~</span><span class="d">$</span> <span class="blink"></span></div>
+      <div class="term-body">
+        <div><span class="tg">root@kali</span><span class="td">:</span><span class="tc">~</span><span class="td">$</span> <span class="tw">nmap -sV --open 192.168.1.0/24</span></div>
+        <div class="td">Starting Nmap 7.94 ( https://nmap.org )</div>
+        <div class="td">PORT&nbsp;&nbsp;&nbsp;&nbsp;STATE SERVICE&nbsp; VERSION</div>
+        <div><span class="tg">22/tcp&nbsp;&nbsp;open&nbsp; ssh&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OpenSSH 8.9p1</span></div>
+        <div><span class="tg">80/tcp&nbsp;&nbsp;open&nbsp; http&nbsp;&nbsp;&nbsp;&nbsp; nginx 1.22.1</span></div>
+        <div><span class="tg">443/tcp&nbsp;open&nbsp; ssl/http nginx 1.22.1</span></div>
+        <div>&nbsp;</div>
+        <div><span class="tg">root@kali</span><span class="td">:</span><span class="tc">~</span><span class="td">$</span> <span class="blink"></span></div>
+      </div>
     </div>
-
-    <div class="btn-row">
-      <a class="btn-primary" href="/kali-terminal.apk" download="kali-terminal.apk">
-        &#x25BC; Download APK <span style="opacity:.6;font-size:11px;font-weight:normal;margin-left:6px">185 KB</span>
-      </a>
-      <a class="btn-secondary" href="https://github.com/CCguvycu/kali-terminal-android">
-        &#x2605; View Source
-      </a>
-    </div>
-    <p class="meta">v1.1 &nbsp;·&nbsp; 185 KB &nbsp;·&nbsp; Android 5.0+ &nbsp;·&nbsp; MIT License &nbsp;·&nbsp;
-      <a href="https://github.com/CCguvycu/kali-terminal-android/releases">All releases</a>
-    </p>
   </div>
 </section>
 
-<!-- ── Stats ─────────────────────────────────────────────────────────────── -->
-<div class="stats-bar">
-  <div class="stat"><span class="n">185 KB</span><span class="l">APK size</span></div>
-  <div class="stat"><span class="n">0 MB</span><span class="l">Local storage</span></div>
-  <div class="stat"><span class="n">Android 5+</span><span class="l">Compatibility</span></div>
-  <div class="stat"><span class="n">MIT</span><span class="l">License</span></div>
-</div>
-
-<!-- ── Features ──────────────────────────────────────────────────────────── -->
-<section class="section" id="features">
+<!-- ── Architecture ── -->
+<section class="section" id="built">
   <div class="container">
-    <p class="section-label">// features</p>
-    <h2>Everything you need</h2>
-    <div class="features">
-      <div class="feat">
-        <div class="feat-icon">⚡</div>
-        <h3>Zero Storage</h3>
-        <p>The Linux environment lives on your server. The app is just a window into it — 185 KB total.</p>
+    <p class="s-label">// architecture</p>
+    <h2>Four pieces. One platform.</h2>
+    <p>Every part communicates through a central REST API. No component touches the database directly — everything routes through the API layer for a single source of truth.</p>
+
+    <div class="arch">
+      <div class="arch-node">
+        <span class="arch-icon">📱</span>
+        <div class="arch-name">Android App</div>
+        <div class="arch-tech">Java · WebView<br>xterm.js · WebSocket</div>
+        <span class="tag tag-green">Client</span>
       </div>
-      <div class="feat">
-        <div class="feat-icon">🖥</div>
-        <h3>Real Terminal</h3>
+      <div class="arch-node">
+        <span class="arch-icon">⚡</span>
+        <div class="arch-name">WS Server</div>
+        <div class="arch-tech">Python · aiohttp<br>PTY · JWT auth</div>
+        <span class="tag tag-cyan">Backend</span>
+      </div>
+      <div class="arch-node">
+        <span class="arch-icon">🔌</span>
+        <div class="arch-name">REST API</div>
+        <div class="arch-tech">FastAPI · pg8000<br>OAuth2 · Swagger</div>
+        <span class="tag tag-purple">API</span>
+      </div>
+      <div class="arch-node">
+        <span class="arch-icon">🗄</span>
+        <div class="arch-name">Database</div>
+        <div class="arch-tech">PostgreSQL<br>Sessions · Commands<br>Alerts</div>
+        <span class="tag tag-orange">Storage</span>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-node">Android App</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-node">WebSocket Server</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-node">REST API</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-node">PostgreSQL</div>
+    </div>
+
+    <div class="stats-strip">
+      <div class="s-stat"><span class="n">4</span><span class="l">Services</span></div>
+      <div class="s-stat"><span class="n">3</span><span class="l">Repos</span></div>
+      <div class="s-stat"><span class="n">185 KB</span><span class="l">APK size</span></div>
+      <div class="s-stat"><span class="n">0</span><span class="l">Phone storage used</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Terminal ── -->
+<section class="section">
+  <div class="container">
+    <p class="s-label cyan">// the terminal</p>
+    <h2>A real shell. On your phone.</h2>
+    <p>The app connects over a secure WebSocket and renders output through xterm.js — full colour support, interactive programs, window resize. The Linux environment lives entirely on the server.</p>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">⚡</span><h3>Zero Storage</h3></div>
+        <p>185 KB APK. No Linux environment on the phone — it all runs remotely on the server.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">🖥</span><h3>Real Terminal</h3></div>
         <p>Full xterm.js emulation — colours, cursor keys, tab completion, window resize, interactive programs.</p>
       </div>
-      <div class="feat">
-        <div class="feat-icon">📜</div>
-        <h3>Command History</h3>
-        <p>Every command logged per session. Tap the history button to browse and re-run past commands.</p>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">📜</span><h3>Command History</h3></div>
+        <p>Every command logged per session to PostgreSQL. Browse and re-run from the history panel.</p>
       </div>
-      <div class="feat">
-        <div class="feat-icon">🔒</div>
-        <h3>Token Auth</h3>
-        <p>Your server, your token. No accounts, no cloud login, no data shared with anyone.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">👁</div>
-        <h3>Live View</h3>
-        <p>The web dashboard lets you watch any active session in real time from a browser.</p>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">⚠</div>
-        <h3>Keyword Alerts</h3>
-        <p>Dangerous commands trigger instant alerts on the dashboard so nothing slips by unnoticed.</p>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">🔒</span><h3>Token Auth</h3></div>
+        <p>Your server, your token. No accounts, no cloud login, no third-party data sharing.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── How it works ───────────────────────────────────────────────────────── -->
-<section class="section" id="install">
+<!-- ── REST API ── -->
+<section class="section">
   <div class="container">
-    <p class="section-label">// getting started</p>
-    <h2>Up and running in 3 steps</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">01</div>
-        <h3>Download the APK</h3>
-        <p>Tap the download button above. When prompted, allow installs from unknown sources in
-          <strong>Settings → Security</strong>.</p>
+    <p class="s-label purple">// REST API</p>
+    <h2>API-first architecture.</h2>
+    <p>The WebSocket server never touches the database directly. Everything goes through a FastAPI REST layer with JWT authentication, auto-generated Swagger docs, and paginated endpoints for sessions, commands, and alerts.</p>
+
+    <div class="code-block">
+      <div class="code-bar"><span>Python · FastAPI</span><span style="color:var(--green);font-size:10px">● live on Railway</span></div>
+      <div class="code-body">
+<span class="cm"># JWT-authenticated session endpoint</span><br>
+<span class="dc">@app</span>.<span class="fn">get</span>(<span class="st">"/api/v1/sessions"</span>, response_model=<span class="kw">List</span>[Session])<br>
+<span class="kw">def</span> <span class="fn">list_sessions</span>(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;page:&nbsp;&nbsp; <span class="kw">int</span> = Query(<span class="st">1</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;active: <span class="kw">Optional</span>[<span class="kw">bool</span>] = Query(<span class="kw">None</span>),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;user:&nbsp;&nbsp; <span class="kw">str</span> = Depends(verify_token),<br>
+):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm"># paginated, filterable, JWT-protected</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span> { <span class="st">"sessions"</span>: [...], <span class="st">"pagination"</span>: {...} }
       </div>
-      <div class="step">
-        <div class="step-num">02</div>
-        <h3>Enter your server</h3>
-        <p>On the connect screen, enter your server URL and token.<br>
-          Default: <code>wss://kali-terminal-production.up.railway.app</code></p>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">🔐</span><h3>JWT / OAuth2</h3></div>
+        <p>Every endpoint validates a signed JWT. The server auto-refreshes tokens on 401 without dropping the session.</p>
       </div>
-      <div class="step">
-        <div class="step-num">03</div>
-        <h3>Connect</h3>
-        <p>Tap Connect. You now have a full Linux shell on your phone. Run any command you like.</p>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">📄</span><h3>Auto Swagger Docs</h3></div>
+        <p>FastAPI generates live interactive docs at <code style="color:var(--green);font-size:11px">/docs</code>. Every endpoint is documented and testable in-browser.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">🔗</span><h3>Internal Endpoints</h3></div>
+        <p>Private <code style="color:var(--green);font-size:11px">/internal</code> routes let the WebSocket server write sessions and commands without direct DB access.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── CTA ───────────────────────────────────────────────────────────────── -->
-<section class="cta">
+<!-- ── Admin dashboard ── -->
+<section class="section">
   <div class="container">
-    <h2>Ready to connect?</h2>
-    <p>Free, open source, self-hostable. Your terminal, your rules.</p>
-    <div class="btn-row">
-      <a class="btn-primary" href="/kali-terminal.apk" download="kali-terminal.apk">
-        &#x25BC; Download APK <span style="opacity:.6;font-size:11px;font-weight:normal;margin-left:6px">185 KB</span>
+    <p class="s-label orange">// admin dashboard</p>
+    <h2>Watch and control every session.</h2>
+    <p>The web dashboard connects to the live API. As admin you can see every session, watch what anyone is typing in real time, and kill a connection instantly — from any browser, no app needed.</p>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">👁</span><h3>Live View</h3></div>
+        <p>Watch any active session in real time inside the browser. Read-only — the user never knows.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">■</span><h3>Kill Sessions</h3></div>
+        <p>One click drops the connection. The WebSocket closes server-side and the terminal exits instantly.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">⚠</span><h3>Keyword Alerts</h3></div>
+        <p>Dangerous commands like <code style="color:var(--red);font-size:11px">rm -rf</code> or <code style="color:var(--red);font-size:11px">nc -e</code> trigger instant alerts logged to the database.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">🛡</span><h3>HMAC Cookie Auth</h3></div>
+        <p>Dashboard login uses HMAC-signed session cookies with 7-day expiry and per-IP rate limiting.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">📡</span><h3>IP Logging</h3></div>
+        <p>Every connection logs the real client IP via X-Forwarded-For, stored per session in PostgreSQL.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-top"><span class="feat-ico">🔄</span><h3>Auto Deploy</h3></div>
+        <p>GitHub Actions triggers a Railway deploy on every push to master. Zero-downtime continuous deployment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Tech stack ── -->
+<section class="section" id="stack">
+  <div class="container">
+    <p class="s-label">// tech stack</p>
+    <h2>Everything used to build it.</h2>
+    <p>Chosen for reliability, minimal dependencies, and zero cost to run.</p>
+
+    <div class="tech-grid">
+      <div class="tech-card"><span class="tech-icon">🐍</span><div class="tech-info"><h3>Python 3</h3><p>Server + API backend</p></div></div>
+      <div class="tech-card"><span class="tech-icon">⚡</span><div class="tech-info"><h3>FastAPI</h3><p>REST API with auto docs</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🌐</span><div class="tech-info"><h3>aiohttp</h3><p>Async WebSocket server</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🗄</span><div class="tech-info"><h3>PostgreSQL</h3><p>Sessions, commands, alerts</p></div></div>
+      <div class="tech-card"><span class="tech-icon">📱</span><div class="tech-info"><h3>Android / Java</h3><p>Native APK, WebView bridge</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🖥</span><div class="tech-info"><h3>xterm.js</h3><p>Terminal emulation in browser</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🔐</span><div class="tech-info"><h3>JWT / OAuth2</h3><p>Auth across all services</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🚂</span><div class="tech-info"><h3>Railway</h3><p>Deployment + PostgreSQL</p></div></div>
+      <div class="tech-card"><span class="tech-icon">⚙</span><div class="tech-info"><h3>GitHub Actions</h3><p>CI/CD auto-deploy</p></div></div>
+      <div class="tech-card"><span class="tech-icon">🐧</span><div class="tech-info"><h3>Linux PTY</h3><p>Real terminal emulation</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Repos ── -->
+<section class="section" id="repos">
+  <div class="container">
+    <p class="s-label cyan">// open source</p>
+    <h2>All three repos are public.</h2>
+    <p>Read the code, self-host the server, fork the app. MIT licensed.</p>
+
+    <div class="repo-grid">
+      <a class="repo-card" href="https://github.com/CCguvycu/kali-terminal-android">
+        <h3>kali-terminal-android</h3>
+        <p>Android APK. WebView + xterm.js + JavascriptInterface bridge. Connects to any server URL.</p>
+        <div class="repo-lang"><span style="background:#b07219"></span>Java</div>
       </a>
-      <a class="btn-secondary" href="https://github.com/CCguvycu/kali-terminal-server">
-        &#x2605; Self-host the server
+      <a class="repo-card" href="https://github.com/CCguvycu/kali-terminal-server">
+        <h3>kali-terminal-server</h3>
+        <p>aiohttp WebSocket server. PTY sessions, live view, keyword alerts, dashboard, HMAC cookie auth.</p>
+        <div class="repo-lang"><span style="background:#3572A5"></span>Python</div>
+      </a>
+      <a class="repo-card" href="https://github.com/CCguvycu/kali-terminal-api">
+        <h3>kali-terminal-api</h3>
+        <p>FastAPI REST backend. JWT auth, paginated endpoints, internal routes for the server, Swagger docs.</p>
+        <div class="repo-lang"><span style="background:#3572A5"></span>Python</div>
       </a>
     </div>
   </div>
 </section>
 
-<!-- ── Footer ────────────────────────────────────────────────────────────── -->
+<!-- ── CTA ── -->
+<div class="cta">
+  <div class="container">
+    <p class="s-label" style="text-align:center">// try it</p>
+    <h2>Download the app.</h2>
+    <p>185 KB. No account. No storage. Just install and connect.</p>
+    <a class="dl-btn" href="/kali-terminal.apk" download="kali-terminal.apk">
+      &#x25BC; Download APK <span class="dl-size">185 KB</span>
+    </a>
+  </div>
+</div>
+
 <footer>
-  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;width:100%">
-    <span class="footer-logo">KALITERMINAL</span>
-    <div class="footer-links">
-      <a href="https://github.com/CCguvycu/kali-terminal-android">Android App</a>
-      <a href="https://github.com/CCguvycu/kali-terminal-server">Server</a>
-      <a href="https://github.com/CCguvycu/kali-terminal-api">API</a>
-      <a href="https://github.com/CCguvycu/kali-terminal-android/blob/master/LICENSE">License</a>
+  <div class="container foot-inner">
+    <span class="foot-logo">KALITERMINAL</span>
+    <div class="foot-links">
+      <a href="https://github.com/CCguvycu">GitHub</a>
+      <a href="https://github.com/CCguvycu/kali-terminal-android/blob/master/LICENSE">MIT License</a>
     </div>
-    <span class="footer-copy">MIT License · Open source · Self-hostable</span>
+    <span class="foot-copy">Built from scratch · Open source · Self-hostable</span>
   </div>
 </footer>
 
