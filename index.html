@@ -10,6 +10,25 @@
 <title>Kali Terminal</title>
 <style>
 :root{--bg:#0a0e17;--bg2:#0f1521;--bg3:#161d2e;--green:#00ff41;--cyan:#00d4ff;--red:#ff4444;--yellow:#ffd700;--orange:#ff8c00;--purple:#a855f7;--dim:#2a3a4a;--dim2:#6a7a8a;--fg:#c8d8e8}
+
+/* ── Boot screen ── */
+#boot{position:fixed;inset:0;background:#000;z-index:9000;display:flex;flex-direction:column;justify-content:center;padding:32px 40px;font-size:13px;line-height:2}
+#boot-lines{font-family:'Courier New',monospace}
+.bl{opacity:0;transition:opacity .15s}.bl.show{opacity:1}
+.bl-ok{color:#00ff41}.bl-warn{color:#ffd700}.bl-err{color:#ff4444}.bl-dim{color:#3a4a5a}
+#boot-cursor{display:inline-block;width:8px;height:15px;background:#00ff41;vertical-align:middle;animation:bcur .6s step-end infinite}
+@keyframes bcur{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── Live stats ── */
+.live-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--dim);border-radius:8px;overflow:hidden;margin:0 0 48px}
+.ls-stat{padding:28px 20px;text-align:center;border-right:1px solid var(--dim);background:var(--bg2);position:relative}
+.ls-stat:last-child{border-right:none}
+.ls-stat .n{display:block;font-size:36px;font-weight:bold;color:var(--green);text-shadow:0 0 14px #00ff4133;font-variant-numeric:tabular-nums;transition:all .4s}
+.ls-stat .l{display:block;color:var(--dim2);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-top:6px}
+.ls-live{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--dim2);letter-spacing:1px}
+.ls-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@media(max-width:520px){.live-stats{grid-template-columns:1fr}.ls-stat{border-right:none;border-bottom:1px solid var(--dim)}.ls-stat:last-child{border-bottom:none}}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--fg);font-family:'Courier New',Courier,monospace;min-height:100vh;overflow-x:hidden}
@@ -143,6 +162,24 @@ footer{border-top:1px solid var(--dim);padding:26px 0}
 </head>
 <body>
 
+<!-- ── Boot screen ── -->
+<div id="boot">
+  <div id="boot-lines">
+    <div class="bl bl-dim">&nbsp;</div>
+    <div class="bl bl-dim">KALITERMINAL OS v1.1 — boot sequence</div>
+    <div class="bl bl-dim">──────────────────────────────────────</div>
+    <div class="bl bl-ok">[  OK  ] Starting WebSocket server...</div>
+    <div class="bl bl-ok">[  OK  ] REST API connected</div>
+    <div class="bl bl-ok">[  OK  ] PostgreSQL database mounted</div>
+    <div class="bl bl-ok">[  OK  ] PTY session manager ready</div>
+    <div class="bl bl-warn">[ WARN ] kalidev private build detected</div>
+    <div class="bl bl-ok">[  OK  ] Admin dashboard online</div>
+    <div class="bl bl-ok">[  OK  ] GitHub Actions deploy pipeline active</div>
+    <div class="bl bl-dim">──────────────────────────────────────</div>
+    <div class="bl bl-ok">System ready. <span id="boot-cursor"></span></div>
+  </div>
+</div>
+
 <nav>
   <div class="container nav-inner">
     <a class="nav-logo" href="/">KALI<em>TERMINAL</em></a>
@@ -165,6 +202,23 @@ footer{border-top:1px solid var(--dim);padding:26px 0}
       &#x25BC; Download APK <span class="dl-size">185 KB</span>
     </a><br>
     <span class="hero-sub">Android 5.0+ &nbsp;·&nbsp; MIT License &nbsp;·&nbsp; <a href="https://github.com/CCguvycu/kali-terminal-android">Source on GitHub</a></span>
+
+    <!-- Live stats -->
+    <div class="live-stats">
+      <div class="ls-stat">
+        <span class="ls-live"><span class="ls-dot"></span>LIVE</span>
+        <span class="n" id="ls-sessions">—</span>
+        <span class="l">Sessions</span>
+      </div>
+      <div class="ls-stat">
+        <span class="n" id="ls-commands">—</span>
+        <span class="l">Commands Run</span>
+      </div>
+      <div class="ls-stat">
+        <span class="n" id="ls-active" style="color:var(--cyan);text-shadow:0 0 14px #00d4ff33">—</span>
+        <span class="l">Active Now</span>
+      </div>
+    </div>
 
     <div class="term-preview">
       <div class="term-bar">
@@ -413,5 +467,59 @@ footer{border-top:1px solid var(--dim);padding:26px 0}
   </div>
 </footer>
 
+<script>
+// ── Boot sequence ──────────────────────────────────────────────────────────────
+(function runBoot() {
+  const lines = document.querySelectorAll('#boot .bl');
+  let i = 0;
+  function showNext() {
+    if (i < lines.length) {
+      lines[i].classList.add('show');
+      i++;
+      setTimeout(showNext, i < 4 ? 80 : i < 8 ? 120 : 160);
+    } else {
+      setTimeout(finishBoot, 600);
+    }
+  }
+  showNext();
+  document.getElementById('boot').addEventListener('click', finishBoot, { once: true });
+})();
+
+function finishBoot() {
+  const boot = document.getElementById('boot');
+  if (!boot || boot.style.display === 'none') return;
+  boot.style.transition = 'opacity .4s';
+  boot.style.opacity = '0';
+  setTimeout(() => boot.style.display = 'none', 400);
+}
+
+// ── Live stats ─────────────────────────────────────────────────────────────────
+function animateCount(el, target) {
+  const start = parseInt(el.textContent.replace(/,/g, '')) || 0;
+  const diff = target - start;
+  const steps = 30;
+  let step = 0;
+  const interval = setInterval(() => {
+    step++;
+    const val = Math.round(start + diff * (step / steps));
+    el.textContent = val.toLocaleString();
+    if (step >= steps) clearInterval(interval);
+  }, 20);
+}
+
+async function fetchStats() {
+  try {
+    const r = await fetch('https://kali-terminal-api-production.up.railway.app/api/v1/stats/public');
+    if (!r.ok) return;
+    const d = await r.json();
+    animateCount(document.getElementById('ls-sessions'), d.total_sessions || 0);
+    animateCount(document.getElementById('ls-commands'), d.total_commands || 0);
+    animateCount(document.getElementById('ls-active'),   d.active_sessions || 0);
+  } catch(e) {}
+}
+
+fetchStats();
+setInterval(fetchStats, 30000);
+</script>
 </body>
 </html>
